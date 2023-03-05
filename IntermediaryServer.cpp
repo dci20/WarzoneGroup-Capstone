@@ -71,7 +71,59 @@ int main() {
 }
 
 
+/*
+// Talking that is needed between UI and intermediary server
 
+#include <iostream>
+#include <vector>
+
+using namespace std;
+
+class intermediaryFunction{
+    public:
+        void setUsername(string uName);
+        void setURL(string url);
+        void setEmbedInfo(string eInfo);
+        string getUsername();
+        string getUrl();
+        string getEmbedInfo();
+    private:
+        string userName;
+        string vidUrl;
+        string embedInfo;
+    
+};
+
+//getters
+string intermediaryFunction::getUsername(){
+    return userName;
+}
+string intermediaryFunction::getUrl(){
+    return vidUrl;
+}
+string intermediaryFunction::getEmbedInfo(){
+    return embedInfo;
+}
+//setters
+void intermediaryFunction::setUsername(string uName){
+    userName = uName;
+}
+void intermediaryFunction::setURL(string url){
+    vidUrl = url;
+}
+void intermediaryFunction::setEmbedInfo(string eInfo){
+    embedInfo = eInfo;
+}
+
+int main() {
+    // object for calling getters and setters
+    intermediaryFunction intFunc;
+    
+    
+    return 0;
+}
+
+*/
 
 
 
