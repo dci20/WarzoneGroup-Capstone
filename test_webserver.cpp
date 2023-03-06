@@ -47,8 +47,8 @@ int main() {
         }
 
         ///
-        send(client_socket, hello, strlen(hello), 0);
-        std::cout << "Hello World message sent." << std::endl;
+        ///send(client_socket, hello, strlen(hello), 0);
+        ///std::cout << "Hello World message sent." << std::endl;
         //close(client_socket);
         ///
 
@@ -56,7 +56,7 @@ int main() {
         response << "HTTP/1.1 200 OK\r\n";
         response << "Content-Type: text/html\r\n";
         response << "\r\n";
-        response << "<html><body><h1>Hello, World!</h1></body></html>";
+        response << "<html><head><title>Warzone Squad - D3S</title></head><body><h1>Warzone Squad - D3S</h1></body></html>"; //"<html><body><h1>Hello, World!</h1></body></html>";
 
         string response_string = response.str();
         const char *response_chars = response_string.c_str();
