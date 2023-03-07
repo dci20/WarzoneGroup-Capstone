@@ -6,7 +6,7 @@
 #include <arpa/inet.h>
 #include <unistd.h>
 
-//#define PORT 8080 
+//#define PORT 8081 
 
 using namespace std;
 
@@ -25,7 +25,7 @@ int main() {
     struct sockaddr_in server_address;
     server_address.sin_family = AF_INET;
     server_address.sin_addr.s_addr = INADDR_ANY;
-    server_address.sin_port = htons(8080);
+    server_address.sin_port = htons(8081);
 
     if (bind(server_socket, (struct sockaddr *)&server_address, sizeof(server_address)) == -1) {
         cout << "Error: Could not bind socket" << endl;
@@ -37,7 +37,7 @@ int main() {
         return 1;
     }
 
-    cout << "Server started on port 8080" << endl;
+    cout << "Server started on port 8081" << endl;
 
     while (true) {
         int client_socket = accept(server_socket, NULL, NULL);

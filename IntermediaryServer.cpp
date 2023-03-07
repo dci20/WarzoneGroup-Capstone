@@ -26,7 +26,7 @@ int main() {
     std::string ip_str = inet_ntoa(ip_address);
 
     // connect to the web server
-    int port = 8081; // HTTP port
+    int port = 8080; // HTTP port
     struct sockaddr_in server_addr;
     memset(&server_addr, 0, sizeof(server_addr));
     server_addr.sin_family = AF_INET;
@@ -73,6 +73,34 @@ int main() {
 
     return 0;
 }
+
+#include <iostream>
+#include <curl/curl.h>
+
+int main()
+{
+    CURL* curl = curl_easy_init();
+    if (curl)
+    {
+        std::string url = "https://www.googleapis.com/youtube/v3/videos?part=snippet&id=<video_id>&key=<api_key>";
+        
+        curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
+        curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
+        
+        CURLcode res = curl_easy_perform(curl);
+        if (res != CURLE_OK)
+        {
+            std::cerr << "curl_easy_perform() failed: " << curl_easy_strerror(res) << std::endl;
+        }
+        
+        curl_easy_cleanup(curl);
+    }
+    
+    return 0;
+}
+
+
+//#####################################
 
 
 
