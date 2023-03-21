@@ -30,6 +30,32 @@ int main(int argc, char** argv)
             curl_easy_cleanup(curl);
             return 1;
         }
+
+        // Open a file for writing the video content
+        FILE* fp = fopen("videoxxx.mp4", "wb");
+        if (!fp)
+        {
+            cerr << "Failed to open file for writing" << endl;
+            return 1;
+        }
+
+        // Set the curl write function to write to the file
+        curl_easy_setopt(curl, CURLOPT_WRITEDATA, fp);
+        curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, fwrite);
+
+        // Download the video content and write it to the file
+        res = curl_easy_perform(curl);
+        if (res != CURLE_OK)
+        {
+            cerr << "curl_easy_perform() failed: " << curl_easy_strerror(res) << endl;
+            curl_easy_cleanup(curl);
+            fclose(fp);
+            return 1;
+        }
+
+        // Close the file and clean up curl
+        fclose(fp);
+        curl_easy_cleanup(curl);
         
         // TODO: Parse and print the response
         

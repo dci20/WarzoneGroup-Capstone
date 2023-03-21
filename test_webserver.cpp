@@ -6,7 +6,7 @@
 #include <arpa/inet.h>
 #include <unistd.h>
 
-//#define PORT 8081 
+#define PORT 8081
 
 using namespace std;
 
@@ -46,11 +46,16 @@ int main() {
             continue;
         }
 
-        ///
-        ///send(client_socket, hello, strlen(hello), 0);
-        ///std::cout << "Hello World message sent." << std::endl;
+        
+        send(client_socket, hello, strlen(hello), 0);
+        std::cout << "Hello World message sent." << std::endl;
         //close(client_socket);
-        ///
+        
+
+        //string s1 ="";
+        //cout << "Enter command:" << endl;
+        //cin >> s1;
+        //send(client_socket, s1); 
 
         stringstream response;
         response << "HTTP/1.1 200 OK\r\n";
@@ -66,7 +71,7 @@ int main() {
             cout << "Error: Could not send response to client" << endl;
         }
 
-        close(client_socket);
+        //close(client_socket); ////changed this
     }
 
     close(server_socket);
