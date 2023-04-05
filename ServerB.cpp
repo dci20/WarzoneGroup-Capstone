@@ -5,6 +5,7 @@
 #include <unistd.h>
 #include <curl/curl.h>
 #include "youtube.cpp"
+#include "accounts.cpp" 
 using namespace std;
 
 #define PORT 8081
@@ -36,7 +37,8 @@ int main() {
     if (listen(server_fd, 3) < 0) {
         perror("Listen failed");
         exit(EXIT_FAILURE);
-    }
+    } 
+
 
     // Accept incoming connections and continuously send HTTP responses 
     while (true) {
@@ -49,8 +51,36 @@ int main() {
         read(new_socket, buffer, 1024);
         std::cout << "Server B received: " << buffer << std::endl;
 
-        // Conditional statement based on HTTP request 
+
+
+        //****************** Authentication / Login ***********************
+        // Check for new user header 
         std::string http_request(buffer);
+        if (http_request.find("newUser") != std::string::npos) {
+            std::cout << "http_request contains newUser" << std::endl;
+            addNewUser();
+            string responseData = "New user added";
+            // Send HTTP response to client 
+            std::string http_response = "HTTP/1.1 200 OK\r\nContent-Length: " + std::to_string(responseData.size()) + "\r\n\r\n" + responseData;
+            send(new_socket, http_response.c_str(), http_response.size(), 0);
+            std::cout << "Server sent HTTP response" << std::endl;
+        }
+        
+        // Check for authorization header
+        if (http_request.find("Authorization") != std::string::npos) {
+            std::cout << "http_request contains Authorization" << std::endl;
+            checkLogin(); 
+            string responseData = "User authenticated";
+            // Send HTTP response to client 
+            std::string http_response = "HTTP/1.1 200 OK\r\nContent-Length: " + std::to_string(responseData.size()) + "\r\n\r\n" + responseData;
+            send(new_socket, http_response.c_str(), http_response.size(), 0);
+            std::cout << "Server sent HTTP response" << std::endl;
+        }
+
+        
+        // Wrap the conditional statement code below if(authorization successful)
+        // Conditional statement based on HTTP request 
+        //std::string http_request(buffer);
         if (http_request.find("/youtube?id=") != std::string::npos) {
             std::cout << "http_request contains /youtube?id=" << std::endl;
 
@@ -107,6 +137,78 @@ int main() {
 
             close(new_socket);
         }
+        else if (http_request.find("watch?v=") != std::string::npos) {
+            std::cout << "http_request contains watch?v=" << std::endl;
+
+            // Extract video ID from URL
+            size_t pos1 = http_request.find("watch?v=");
+            if (pos1 == std::string::npos || pos1 + 8 + 11 > http_request.length()) {
+                std::cerr << "Invalid HTTP request" << std::endl;
+                close(new_socket);
+                continue;
+            }
+            std::string videoID = http_request.substr(pos1 + 8, 11);
+            std::cout << "Video ID: " << videoID << std::endl;
+
+            // Call YouTube video download function with video ID 
+            string responseData = ""; 
+            string video_url = "https://www.youtube.com/watch?v=" + videoID;
+            string file_path = videoID + ".mp4"; 
+            if (download_youtube_video(video_url, file_path)) {
+                std::cout << "Video downloaded successfully!" << std::endl;
+                responseData = "Video downloaded successfully!";
+            } else {
+                std::cerr << "Failed to download video" << std::endl;
+                responseData = "Failed to download video";
+            }
+
+            // Send HTTP response to client 
+            std::string http_response = "HTTP/1.1 200 OK\r\nContent-Length: " + std::to_string(responseData.size()) + "\r\n\r\n" + responseData;
+            send(new_socket, http_response.c_str(), http_response.size(), 0);
+            std::cout << "Server sent HTTP response" << std::endl;
+
+            close(new_socket);
+
+        }
+        //*****************************************************************
+        else if (http_request.find("/youtube?user=") != std::string::npos) {
+            std::cout << "http_request contains /youtube?user=" << std::endl;
+
+            // Extract username from URL
+            size_t pos1 = http_request.find("/youtube?user=");
+            if (pos1 == std::string::npos || pos1 + 14 + 5 > http_request.length()) {
+                std::cerr << "Invalid HTTP request" << std::endl;
+                close(new_socket);
+                continue;
+            }
+            std::string username = http_request.substr(pos1 + 14, 5);
+            std::cout << "Username: " << username << std::endl;
+
+            // Call YouTube function with username to retrieve playlist ID 
+            string playlistId = getPlaylistId(username); 
+            if(playlistId.empty()){
+                cout << "Failed to retrieve video information." << endl;
+                return 1;
+            }
+            cout << "Playlist ID: " << playlistId << endl;
+
+            // Call YouTube function with playlist ID to retrieve playlist videos 
+            string responseData = getVideoPlaylist(playlistId);
+            if(responseData.empty()){
+                cout << "Failed to retrieve playlist videos." << endl;
+                return 1;
+            }
+            cout << "Playlist videos for user: " << username << endl;
+            cout << responseData << endl; 
+
+            // Send HTTP response to client 
+            std::string http_response = "HTTP/1.1 200 OK\r\nContent-Length: " + std::to_string(responseData.size()) + "\r\n\r\n" + responseData;
+            send(new_socket, http_response.c_str(), http_response.size(), 0);
+            std::cout << "Server sent HTTP response" << std::endl;
+
+            close(new_socket);
+        }
+        //*******************************************************************
 
     }
 
