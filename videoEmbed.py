@@ -30,6 +30,7 @@ def about():
 def calendar():
     return render_template('calendar.html')
 
+"""
 def get_embed_links(urls):
     video_ids = [re.findall(r'(?:v=|\/)([a-zA-Z0-9_-]{11})(?:\?|&|$)', url)[0] for url in urls]
     embed_links = [f'https://www.youtube.com/embed/{id}' for id in video_ids]
@@ -37,7 +38,7 @@ def get_embed_links(urls):
 
 @app.route('/get_videos_html')
 def get_videos_html():
-    video_urls = requests.get('http://other-server.com/videos').json()
+    video_urls = requests.get('').json()
     embed_links = get_embed_links(video_urls)
     videos_html = ''
     for link in embed_links:
@@ -52,7 +53,7 @@ def get_videos_html():
         </div>
         '''
     return f'<div class="container-fluid"><div class="row gy-4 justify-content-center">{videos_html}</div></div>'
-
+"""
 
 if __name__ == '__main__':
     app.run("192.168.0.161", 8081, True)
