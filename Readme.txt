@@ -30,11 +30,19 @@ curl 'http://192.168.1.65:8081/watch?v=dc8W1XJNsXQ'
 curl 'http://192.168.1.65:8081/watch?v=Fn_6M1rz_TE'
 
 Commands for testing youtube function (Retrieve user playlist videos):
-(this will retrieve all user videos)
+(this will retrieve all videos for a specific user)
 
 curl 'http://192.168.1.65:8081/youtube?user=user1'
 curl 'http://192.168.1.65:8081/youtube?user=user2'
 curl 'http://192.168.1.65:8081/youtube?user=user3'
+
+Command for testing new user account creation:
+
+curl 'http://192.168.1.65:8081/newUser'
+
+Command for testing user authentication / login: 
+
+curl 'http://192.168.1.65:8081/Authorization'
 
 Note:
 Currently, the search by video ID works on unlisted videos but the search by channel ID only works on public videos.
