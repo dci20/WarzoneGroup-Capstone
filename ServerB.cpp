@@ -51,11 +51,10 @@ int main() {
         read(new_socket, buffer, 1024);
         std::cout << "Server B received: " << buffer << std::endl;
 
-
+        std::string http_request(buffer);
 
         //****************** Authentication / Login ***********************
         // Check for new user header 
-        std::string http_request(buffer);
         if (http_request.find("newUser") != std::string::npos) {
             std::cout << "http_request contains newUser" << std::endl;
             addNewUser();
@@ -67,10 +66,17 @@ int main() {
         }
         
         // Check for authorization header
+        bool validCredentials = false; 
         if (http_request.find("Authorization") != std::string::npos) {
             std::cout << "http_request contains Authorization" << std::endl;
-            checkLogin(); 
-            string responseData = "User authenticated";
+            validCredentials = checkLogin(); 
+            string responseData = ""; 
+            if (validCredentials == true){
+                responseData = "User authenticated";
+            }
+            else {
+                responseData = "Invalid credentials";
+            }
             // Send HTTP response to client 
             std::string http_response = "HTTP/1.1 200 OK\r\nContent-Length: " + std::to_string(responseData.size()) + "\r\n\r\n" + responseData;
             send(new_socket, http_response.c_str(), http_response.size(), 0);
@@ -170,18 +176,21 @@ int main() {
             close(new_socket);
 
         }
-        //*****************************************************************
         else if (http_request.find("/youtube?user=") != std::string::npos) {
             std::cout << "http_request contains /youtube?user=" << std::endl;
 
             // Extract username from URL
             size_t pos1 = http_request.find("/youtube?user=");
-            if (pos1 == std::string::npos || pos1 + 14 + 5 > http_request.length()) {
+            if (pos1 == std::string::npos) {
                 std::cerr << "Invalid HTTP request" << std::endl;
                 close(new_socket);
                 continue;
             }
-            std::string username = http_request.substr(pos1 + 14, 5);
+            size_t pos2 = http_request.find_first_of("/?&' ", pos1 + 14); // find next "/?&'" after "/youtube?user="
+            if (pos2 == std::string::npos) {
+                pos2 = http_request.length() - 1; // if no "/?&'" found, username extends to end of string
+            }
+            std::string username = http_request.substr(pos1 + 14, pos2 - pos1 - 14);
             std::cout << "Username: " << username << std::endl;
 
             // Call YouTube function with username to retrieve playlist ID 
@@ -208,7 +217,6 @@ int main() {
 
             close(new_socket);
         }
-        //*******************************************************************
 
     }
 
