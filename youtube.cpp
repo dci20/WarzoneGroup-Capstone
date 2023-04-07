@@ -10,8 +10,8 @@ using namespace std;
 string YouTube(string ID); //Search with video ID (single video) 
 string getVideoInfo(string channelId); //Search with channel ID (all videos on channel) 
 bool download_youtube_video(const std::string& url, const std::string& file_path); //Download video based on video ID 
-std::string getPlaylistId(std::string playlistName); //Retrieve playlist ID based on playlist name 
-std::string getVideoPlaylist(string playlistId); //Retrieve playlist based on playlist ID 
+std::string getPlaylistId(std::string playlistName); //Retrieve playlist ID based on playlist name (playlist name same as username)
+std::string getVideoPlaylist(string playlistId); //Retrieve playlist videos based on playlist ID 
 
 // Define a callback function to write the response data to a string
 size_t writeCallback(char* ptr, size_t size, size_t nmemb, void* userdata) {
@@ -226,7 +226,7 @@ std::string getPlaylistId(std::string playlistName)
 // YouTube Function - Get playlist based on playlist ID 
 string getVideoPlaylist(string playlistId)
 {
-    cout << "Retrieving YouTube Video Information for playlist: " + playlistId;
+    cout << "Retrieving YouTube Video Information for playlist: " + playlistId << endl;
     CURL* curl = curl_easy_init();
     if (curl)
     {
