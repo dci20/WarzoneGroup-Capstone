@@ -1,9 +1,3 @@
-//
-//  main.cpp
-//  testCode
-//
-//  Created by Daniel Irani on 3/29/23.
-//
 
 #include <iostream>
 #include <string>
