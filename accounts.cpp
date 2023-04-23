@@ -19,13 +19,13 @@ void removeLogin();
 void encryptAll(int);
 void decryptAll(int);
 
-int main()
+/*int main()
 {
     int option = 0;
     // will be part of admin account where they pick a key in later sprint instead of hardcoded
     int key = 2;
     cout << "###Welcome###\n\n";
-/*
+
     while(option != 9){
         // menu
         cout << "\n##########################\n";
@@ -76,11 +76,11 @@ int main()
                 cout << "Error! Please enter a valid input!\n";
                 break;
                 }
-    }*/
+    }
 
 
     return 0;
-}
+}*/
 
 // handles adding of a new user account
 void addNewUser(){
