@@ -2,6 +2,7 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <string.h>
+#include <vector>
 #include <unistd.h>
 #include <curl/curl.h>
 #include "youtube.cpp"
@@ -53,23 +54,89 @@ int main() {
 
         std::string http_request(buffer);
 
-        //****************** Authentication / Login ***********************
+        //************************* Account Creation / Authentication / Login *************************
         // Check for new user header 
         if (http_request.find("newUser") != std::string::npos) {
             std::cout << "http_request contains newUser" << std::endl;
-            addNewUser();
-            string responseData = "New user added";
+            string newUserName = "";
+            //newUserName = addNewUser();
+
+            //Extract username 
+            size_t pos1 = http_request.find("/user=");
+            if (pos1 == std::string::npos) {
+                std::cerr << "Invalid HTTP request" << std::endl;
+                close(new_socket);
+                continue;
+            }
+            size_t pos2 = http_request.find_first_of("/?&' ", pos1 + 6); // find next "/?&'" after "/youtube?user="
+            if (pos2 == std::string::npos) {
+                pos2 = http_request.length() - 1; // if no "/?&'" found, username extends to end of string
+            }
+            std::string username = http_request.substr(pos1 + 6, pos2 - pos1 - 6);
+            std::cout << "Username: " << username << std::endl;
+
+            //Extract password 
+            size_t posA = http_request.find("/password=");
+            if (posA == std::string::npos) {
+                std::cerr << "Invalid HTTP request" << std::endl;
+                close(new_socket);
+                continue;
+            }
+            size_t posB = http_request.find_first_of("/?&' ", posA + 10); // find next "/?&'" after "/youtube?user="
+            if (posB == std::string::npos) {
+                posB = http_request.length() - 1; // if no "/?&'" found, username extends to end of string
+            }
+            std::string password = http_request.substr(posA + 10, posB - posA - 10);
+            std::cout << "Password: " << password << std::endl;
+
+            newUserName = addNewUser(username, password);
+
+            string responseData = "New user added: " + newUserName;
             // Send HTTP response to client 
             std::string http_response = "HTTP/1.1 200 OK\r\nContent-Length: " + std::to_string(responseData.size()) + "\r\n\r\n" + responseData;
             send(new_socket, http_response.c_str(), http_response.size(), 0);
             std::cout << "Server sent HTTP response" << std::endl;
+            //Create YouTube playlist for new user
+            string newToken = getAccessToken();
+            string createPlaylistResponse = createPlaylist(newToken, newUserName);
+            cout << createPlaylistResponse << " for " << newUserName << endl;
+
         }
         
         // Check for authorization header
         bool validCredentials = false; 
         if (http_request.find("Authorization") != std::string::npos) {
             std::cout << "http_request contains Authorization" << std::endl;
-            validCredentials = checkLogin(); 
+
+            //Extract username 
+            size_t pos1 = http_request.find("/user=");
+            if (pos1 == std::string::npos) {
+                std::cerr << "Invalid HTTP request" << std::endl;
+                close(new_socket);
+                continue;
+            }
+            size_t pos2 = http_request.find_first_of("/?&' ", pos1 + 6); // find next "/?&'" after "/youtube?user="
+            if (pos2 == std::string::npos) {
+                pos2 = http_request.length() - 1; // if no "/?&'" found, username extends to end of string
+            }
+            std::string username = http_request.substr(pos1 + 6, pos2 - pos1 - 6);
+            std::cout << "Username: " << username << std::endl;
+
+            //Extract password 
+            size_t posA = http_request.find("/password=");
+            if (posA == std::string::npos) {
+                std::cerr << "Invalid HTTP request" << std::endl;
+                close(new_socket);
+                continue;
+            }
+            size_t posB = http_request.find_first_of("/?&' ", posA + 10); // find next "/?&'" after "/youtube?user="
+            if (posB == std::string::npos) {
+                posB = http_request.length() - 1; // if no "/?&'" found, username extends to end of string
+            }
+            std::string password = http_request.substr(posA + 10, posB - posA - 10);
+            std::cout << "Password: " << password << std::endl;
+
+            validCredentials = checkLogin(username, password); 
             string responseData = ""; 
             if (validCredentials == true){
                 responseData = "User authenticated";
@@ -216,6 +283,62 @@ int main() {
             std::cout << "Server sent HTTP response" << std::endl;
 
             close(new_socket);
+        }
+        else if (http_request.find("/videos?part=") != std::string::npos) {
+            std::cout << "http_request contains /videos?part=" << std::endl;
+
+            // Extract username from URL
+            size_t pos1 = http_request.find("/user=");
+            if (pos1 == std::string::npos) {
+                std::cerr << "Invalid HTTP request" << std::endl;
+                close(new_socket);
+                continue;
+            }
+            size_t pos2 = http_request.find_first_of("/?&' ", pos1 + 6); // find next "/?&'" after "/youtube?user="
+            if (pos2 == std::string::npos) {
+                pos2 = http_request.length() - 1; // if no "/?&'" found, username extends to end of string
+            }
+            std::string username = http_request.substr(pos1 + 6, pos2 - pos1 - 6);
+            std::cout << "Username: " << username << std::endl;
+
+            // Extract video_file_path from URL
+            size_t posA = http_request.find("/path=");
+            if (posA == std::string::npos) {
+                std::cerr << "Invalid HTTP request" << std::endl;
+                close(new_socket);
+                continue;
+            }
+            size_t posB = http_request.find_first_of("?&' ", posA + 6); // find next "/?&'" after "/youtube?user="
+            if (posB == std::string::npos) {
+                posB = http_request.length() - 1; // if no "/?&'" found, username extends to end of string
+            }
+            std::string file_path = http_request.substr(posA + 6, posB - posA - 6);
+            std::cout << "Video File Path: " << file_path << std::endl;
+
+            // Call getAccessToken()
+            string newToken = "";
+            newToken = getAccessToken();
+
+            // Call getPlaylistId(std::string playlistName) - "playlistName same as username" 
+            string playlistId = getPlaylistId(username); 
+            if(playlistId.empty()){
+                cout << "Failed to retrieve video information." << endl;
+                return 1;
+            }
+            cout << "Playlist ID: " << playlistId << endl;
+
+            // Call uploadVideo(std::string access_token, std::string playlist_id, std::string video_file_path)
+            string responseData = uploadVideo(newToken, playlistId, file_path);
+
+            cout << "Response Data: " << responseData << endl;
+            
+            // Send HTTP response to client 
+            std::string http_response = "HTTP/1.1 200 OK\r\nContent-Length: " + std::to_string(responseData.size()) + "\r\n\r\n" + responseData;
+            send(new_socket, http_response.c_str(), http_response.size(), 0);
+            std::cout << "Server sent HTTP response" << std::endl;
+
+            close(new_socket);
+
         }
 
     }
