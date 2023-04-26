@@ -37,12 +37,25 @@ curl 'http://192.168.1.65:8081/youtube?user=user2'
 curl 'http://192.168.1.65:8081/youtube?user=user3'
 
 Command for testing new user account creation:
+(Adds new user account and creates YouTube playlist for new user)
 
+Old test:
 curl 'http://192.168.1.65:8081/newUser'
+
+New test: 
+curl 'http://192.168.1.65:8081/newUser/user=steve/password=123' 
 
 Command for testing user authentication / login: 
 
+Old test:
 curl 'http://192.168.1.65:8081/Authorization'
+
+New test:
+curl 'http://192.168.1.65:8081/Authorization/user=steve/password=123'  
+
+Command for testing video upload function:
+
+curl 'http://192.168.1.65:8081/videos?part=/user=jimmy/path=/Users/Cody/Desktop/Spring_2023_Semester/Capstone/GitHub/WarzoneGroup-Capstone/dc8W1XJNsXQ.mp4' 
 
 Note:
 Currently, the search by video ID works on unlisted videos but the search by channel ID only works on public videos.
